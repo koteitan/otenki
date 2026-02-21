@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -14,9 +14,16 @@ import type { WeatherData } from '../api/weatherInterface';
 
 interface WeatherChartProps {
   data: WeatherData[];
+  historicalData?: WeatherData[][];
 }
 
+type ChartDataEntry = Record<string, string | number | null | undefined>;
+
 const today = new Date().toISOString().split('T')[0];
+
+const PAST_MAX_COLOR = '#991B1B'; // 暗い赤
+const PAST_MIN_COLOR = '#1e3a8a'; // 暗い青
+const PAST_YEAR_OPACITY = [0.9, 0.7, 0.5, 0.35]; // 1年前〜4年前
 
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -28,21 +35,65 @@ function formatDateLong(dateStr: string): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
+// 日付を指定年数だけ加算（閏年の2/29は2/28に丸める）
+function shiftDate(dateStr: string, yearsToAdd: number): string {
+  const [yearStr, monthStr, dayStr] = dateStr.split('-');
+  const year = parseInt(yearStr) + yearsToAdd;
+  const month = parseInt(monthStr);
+  const day = parseInt(dayStr);
+  if (month === 2 && day === 29) {
+    const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    return `${year}-02-${isLeap ? '29' : '28'}`;
+  }
+  return `${year}-${monthStr}-${dayStr}`;
+}
+
 const LEGEND_LABELS: Record<string, string> = {
   tempMax: '最高気温',
   tempMin: '最低気温',
   tempCurrent: '現在気温',
+  tempMax_1y: '過去4年 最高',
+  tempMin_1y: '過去4年 最低',
 };
 
-export function WeatherChart({ data }: WeatherChartProps) {
+export function WeatherChart({ data, historicalData }: WeatherChartProps) {
+  const chartData = useMemo<ChartDataEntry[]>(() => {
+    // 各過去年のデータを「今年の日付」にシフトしたMapを構築
+    const histMaps = (historicalData ?? []).map((yearData, idx) => {
+      const map = new Map<string, WeatherData>();
+      yearData.forEach((d) => {
+        const shifted = shiftDate(d.date, idx + 1);
+        map.set(shifted, d);
+      });
+      return map;
+    });
+
+    return data.map((d) => {
+      const entry: ChartDataEntry = {
+        date: d.date,
+        tempMax: d.tempMax,
+        tempMin: d.tempMin,
+        tempCurrent: d.tempCurrent,
+      };
+      histMaps.forEach((map, idx) => {
+        const hist = map.get(d.date);
+        const n = idx + 1;
+        entry[`tempMax_${n}y`] = hist?.tempMax ?? null;
+        entry[`tempMin_${n}y`] = hist?.tempMin ?? null;
+      });
+      return entry;
+    });
+  }, [data, historicalData]);
+
   if (data.length === 0) return null;
 
   const tickInterval = Math.floor(data.length / 10);
+  const hasHistorical = historicalData && historicalData.length > 0;
 
   return (
     <div className="weather-chart">
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+        <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
           <XAxis
             dataKey="date"
@@ -57,7 +108,7 @@ export function WeatherChart({ data }: WeatherChartProps) {
           />
           <Tooltip
             formatter={(value: number | undefined, name: string | undefined) => [
-              value !== undefined ? `${value}°C` : '',
+              value !== undefined && value !== null ? `${value}°C` : '',
               name !== undefined ? (LEGEND_LABELS[name] ?? name) : '',
             ]}
             labelFormatter={(label: React.ReactNode) =>
@@ -79,6 +130,43 @@ export function WeatherChart({ data }: WeatherChartProps) {
             strokeDasharray="4 4"
             label={{ value: '今日', fill: 'var(--text-secondary)', fontSize: 11 }}
           />
+
+          {/* 過去4年（奥に表示） */}
+          {hasHistorical &&
+            historicalData.map((_, idx) => {
+              const n = idx + 1;
+              const opacity = PAST_YEAR_OPACITY[idx];
+              return (
+                <React.Fragment key={`hist_${n}`}>
+                  <Line
+                    type="monotone"
+                    dataKey={`tempMax_${n}y`}
+                    stroke={PAST_MAX_COLOR}
+                    strokeWidth={1}
+                    strokeOpacity={opacity}
+                    dot={false}
+                    activeDot={false}
+                    name={`tempMax_${n}y`}
+                    legendType={n === 1 ? 'line' : 'none'}
+                    connectNulls={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={`tempMin_${n}y`}
+                    stroke={PAST_MIN_COLOR}
+                    strokeWidth={1}
+                    strokeOpacity={opacity}
+                    dot={false}
+                    activeDot={false}
+                    name={`tempMin_${n}y`}
+                    legendType={n === 1 ? 'line' : 'none'}
+                    connectNulls={false}
+                  />
+                </React.Fragment>
+              );
+            })}
+
+          {/* 今年（手前に表示） */}
           <Line
             type="monotone"
             dataKey="tempMax"
