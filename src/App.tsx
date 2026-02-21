@@ -32,16 +32,37 @@ function getInitialPrefCode(): string {
   return '13';
 }
 
+function parseCustomDate(value: string, year: number): Date | null {
+  const parts = value.split('/');
+  if (parts.length !== 2) return null;
+  const month = parseInt(parts[0], 10);
+  const day = parseInt(parts[1], 10);
+  if (isNaN(month) || isNaN(day) || month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const d = new Date(year, month - 1, day);
+  if (d.getMonth() !== month - 1) return null; // 2/30 などの無効な日付を除外
+  return d;
+}
+
 function App() {
   const [prefCode, setPrefCode] = useState(getInitialPrefCode);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [historicalData, setHistoricalData] = useState<WeatherData[][]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dateMode, setDateMode] = useState<'today' | 'custom'>('today');
+  const [customDateInput, setCustomDateInput] = useState('1/1');
+  const [customDate, setCustomDate] = useState('1/1');
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, prefCode);
   }, [prefCode]);
+
+  function confirmCustomDate() {
+    const parsed = parseCustomDate(customDateInput, new Date().getFullYear());
+    if (parsed) {
+      setCustomDate(customDateInput);
+    }
+  }
 
   useEffect(() => {
     const pref = getPrefectureByCode(prefCode);
@@ -55,9 +76,18 @@ function App() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 過去4年分: 今日の同日を基準に3ヶ月前〜基準日+2ヶ月後の範囲で取得
+    // 基準日を計算
+    let centerDate: Date;
+    if (dateMode === 'today') {
+      centerDate = new Date(today);
+    } else {
+      const parsed = parseCustomDate(customDate, today.getFullYear());
+      centerDate = parsed ?? new Date(today);
+    }
+
+    // 過去4年分: 基準日の同日 ±2ヶ月
     const historicalPromises = [1, 2, 3, 4].map((yearsAgo) => {
-      const refDate = new Date(today);
+      const refDate = new Date(centerDate);
       refDate.setFullYear(refDate.getFullYear() - yearsAgo);
 
       const startDate = new Date(refDate);
@@ -74,10 +104,43 @@ function App() {
       );
     });
 
-    Promise.all([
-      weatherAPI.getCombinedData(pref.lat, pref.lon, 2, 14),
-      ...historicalPromises,
-    ])
+    // 今年: 基準日 ±2ヶ月、ただし今日+14日でキャップ
+    const rangeStart = new Date(centerDate);
+    rangeStart.setMonth(rangeStart.getMonth() - 2);
+    const rangeEnd = new Date(centerDate);
+    rangeEnd.setMonth(rangeEnd.getMonth() + 2);
+
+    const maxForecastDate = new Date(today);
+    maxForecastDate.setDate(maxForecastDate.getDate() + 14);
+    const effectiveEnd = rangeEnd <= maxForecastDate ? rangeEnd : maxForecastDate;
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let currentDataPromise: Promise<WeatherData[]>;
+    if (effectiveEnd < today) {
+      // 全て過去 → アーカイブAPIのみ
+      currentDataPromise = weatherAPI.getHistoricalData(
+        pref.lat,
+        pref.lon,
+        formatDate(rangeStart),
+        formatDate(effectiveEnd)
+      );
+    } else if (rangeStart >= today) {
+      // 全て未来 → 予報APIのみ、rangeStart以降をフィルタ
+      const daysForward = Math.ceil((effectiveEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      currentDataPromise = weatherAPI.getForecastData(pref.lat, pref.lon, daysForward + 1)
+        .then((data) => data.filter((d) => d.date >= formatDate(rangeStart)));
+    } else {
+      // 今日をまたぐ → アーカイブ + 予報を結合
+      const daysForward = Math.ceil((effectiveEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      currentDataPromise = Promise.all([
+        weatherAPI.getHistoricalData(pref.lat, pref.lon, formatDate(rangeStart), formatDate(yesterday)),
+        weatherAPI.getForecastData(pref.lat, pref.lon, daysForward + 1),
+      ]).then(([hist, forecast]) => [...hist, ...forecast]);
+    }
+
+    Promise.all([currentDataPromise, ...historicalPromises])
       .then(([currentData, ...histData]) => {
         setWeatherData(currentData);
         setHistoricalData(histData);
@@ -88,9 +151,10 @@ function App() {
       .finally(() => {
         setLoading(false);
       });
-  }, [prefCode]);
+  }, [prefCode, dateMode, customDate]);
 
   const selectedPref = getPrefectureByCode(prefCode);
+  const centerLabel = dateMode === 'today' ? '今日' : customDate;
 
   return (
     <div className="app">
@@ -99,7 +163,15 @@ function App() {
       </header>
       <main className="app-main">
         <div className="controls">
-          <PrefectureSelector value={prefCode} onChange={setPrefCode} />
+          <PrefectureSelector
+            value={prefCode}
+            onChange={setPrefCode}
+            dateMode={dateMode}
+            onDateModeChange={setDateMode}
+            customDateInput={customDateInput}
+            onCustomDateInputChange={setCustomDateInput}
+            onCustomDateConfirm={confirmCustomDate}
+          />
         </div>
         <div className="chart-container">
           {loading && (
@@ -111,7 +183,7 @@ function App() {
           {!loading && !error && weatherData.length > 0 && (
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
-              <p className="chart-subtitle">過去3ヶ月〜1週間後（過去4年比較）</p>
+              <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
               <WeatherChart data={weatherData} historicalData={historicalData} />
             </>
           )}
