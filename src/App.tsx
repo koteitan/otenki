@@ -180,7 +180,7 @@ function App() {
           {error && (
             <div className="status-message error">{error}</div>
           )}
-          {!loading && !error && weatherData.length > 0 && (
+          {!loading && !error && (weatherData.length > 0 || historicalData.some(d => d.length > 0)) && (
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
               <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
