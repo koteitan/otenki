@@ -38,7 +38,7 @@ function App() {
       refDate.setFullYear(refDate.getFullYear() - yearsAgo);
 
       const startDate = new Date(refDate);
-      startDate.setMonth(startDate.getMonth() - 3);
+      startDate.setMonth(startDate.getMonth() - 2);
 
       const endDate = new Date(refDate);
       endDate.setMonth(endDate.getMonth() + 2);
@@ -52,7 +52,7 @@ function App() {
     });
 
     Promise.all([
-      weatherAPI.getCombinedData(pref.lat, pref.lon, 3, 14),
+      weatherAPI.getCombinedData(pref.lat, pref.lon, 2, 14),
       ...historicalPromises,
     ])
       .then(([currentData, ...histData]) => {
