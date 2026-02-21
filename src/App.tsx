@@ -32,7 +32,7 @@ function App() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 過去4年分: 今日の同日を基準に3ヶ月前〜基準日（過去データのみ）の範囲で取得
+    // 過去4年分: 今日の同日を基準に3ヶ月前〜基準日+2ヶ月後の範囲で取得
     const historicalPromises = [1, 2, 3, 4].map((yearsAgo) => {
       const refDate = new Date(today);
       refDate.setFullYear(refDate.getFullYear() - yearsAgo);
@@ -40,11 +40,14 @@ function App() {
       const startDate = new Date(refDate);
       startDate.setMonth(startDate.getMonth() - 3);
 
+      const endDate = new Date(refDate);
+      endDate.setMonth(endDate.getMonth() + 2);
+
       return weatherAPI.getHistoricalData(
         pref.lat,
         pref.lon,
         formatDate(startDate),
-        formatDate(refDate)
+        formatDate(endDate)
       );
     });
 
