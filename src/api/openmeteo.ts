@@ -1,4 +1,4 @@
-import { WeatherAPI, WeatherData } from './weatherInterface';
+import type { WeatherAPI, WeatherData } from './weatherInterface';
 
 /**
  * Open-Meteo APIの実装

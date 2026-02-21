@@ -1,3 +1,4 @@
+import { OpenMeteoAPI } from './openmeteo';
 export { OpenMeteoAPI } from './openmeteo';
 export type { WeatherAPI, WeatherData } from './weatherInterface';
 

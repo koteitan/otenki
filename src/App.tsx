@@ -22,10 +22,10 @@ function App() {
 
     weatherAPI
       .getCombinedData(pref.lat, pref.lon, 3, 7)
-      .then((data) => {
+      .then((data: WeatherData[]) => {
         setWeatherData(data);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
       })
       .finally(() => {

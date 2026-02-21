@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   LineChart,
   Line,
@@ -55,11 +56,13 @@ export function WeatherChart({ data }: WeatherChartProps) {
             width={40}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              `${value}°C`,
+            formatter={(value: number | undefined, name: string) => [
+              value !== undefined ? `${value}°C` : '',
               LEGEND_LABELS[name] ?? name,
             ]}
-            labelFormatter={(label: string) => formatDateLong(label)}
+            labelFormatter={(label: React.ReactNode) =>
+              typeof label === 'string' ? formatDateLong(label) : String(label)
+            }
             contentStyle={{
               backgroundColor: 'var(--tooltip-bg)',
               border: '1px solid var(--tooltip-border)',
