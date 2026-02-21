@@ -52,7 +52,7 @@ function App() {
     });
 
     Promise.all([
-      weatherAPI.getCombinedData(pref.lat, pref.lon, 3, 16),
+      weatherAPI.getCombinedData(pref.lat, pref.lon, 3, 14),
       ...historicalPromises,
     ])
       .then(([currentData, ...histData]) => {
