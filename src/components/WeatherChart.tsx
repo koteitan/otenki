@@ -68,15 +68,29 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
       return map;
     });
 
-    return data.map((d) => {
+    // 全日付を収集（今年 + 過去年シフト後）
+    const dateSet = new Set<string>(data.map((d) => d.date));
+    histMaps.forEach((map) => {
+      map.forEach((_, shiftedDate) => {
+        dateSet.add(shiftedDate);
+      });
+    });
+    const allDates = Array.from(dateSet).sort();
+
+    // 今年データのMap
+    const dataMap = new Map<string, WeatherData>();
+    data.forEach((d) => dataMap.set(d.date, d));
+
+    return allDates.map((date) => {
+      const d = dataMap.get(date);
       const entry: ChartDataEntry = {
-        date: d.date,
-        tempMax: d.tempMax,
-        tempMin: d.tempMin,
-        tempCurrent: d.tempCurrent,
+        date,
+        tempMax: d?.tempMax ?? null,
+        tempMin: d?.tempMin ?? null,
+        tempCurrent: d?.tempCurrent ?? null,
       };
       histMaps.forEach((map, idx) => {
-        const hist = map.get(d.date);
+        const hist = map.get(date);
         const n = idx + 1;
         entry[`tempMax_${n}y`] = hist?.tempMax ?? null;
         entry[`tempMin_${n}y`] = hist?.tempMin ?? null;
@@ -87,7 +101,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
 
   if (data.length === 0) return null;
 
-  const tickInterval = Math.floor(data.length / 10);
+  const tickInterval = Math.floor(chartData.length / 10);
   const hasHistorical = historicalData && historicalData.length > 0;
 
   return (
