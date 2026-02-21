@@ -99,7 +99,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
     });
   }, [data, historicalData]);
 
-  if (data.length === 0) return null;
+  if (chartData.length === 0) return null;
 
   const tickInterval = Math.floor(chartData.length / 10);
   const hasHistorical = historicalData && historicalData.length > 0;
