@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { PrefectureSelector } from './components/PrefectureSelector';
 import { WeatherChart } from './components/WeatherChart';
 import { weatherAPI } from './api';
-import { getPrefectureByCode } from './data/prefectures';
+import { getPrefectureByCode, getPrefectureByName } from './data/prefectures';
 import type { WeatherData } from './api/weatherInterface';
 import './App.css';
+
+const STORAGE_KEY = 'selectedPrefecture';
 
 function formatDate(date: Date): string {
   const y = date.getFullYear();
@@ -13,12 +15,33 @@ function formatDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+function getInitialPrefCode(): string {
+  // クエリパラメータを最優先
+  const params = new URLSearchParams(window.location.search);
+  const qName = params.get('q');
+  if (qName) {
+    const pref = getPrefectureByName(qName);
+    if (pref) return pref.code;
+  }
+
+  // localStorage
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved && getPrefectureByCode(saved)) return saved;
+
+  // デフォルト: 東京都
+  return '13';
+}
+
 function App() {
-  const [prefCode, setPrefCode] = useState('13'); // 東京都
+  const [prefCode, setPrefCode] = useState(getInitialPrefCode);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [historicalData, setHistoricalData] = useState<WeatherData[][]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, prefCode);
+  }, [prefCode]);
 
   useEffect(() => {
     const pref = getPrefectureByCode(prefCode);
