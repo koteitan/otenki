@@ -56,9 +56,9 @@ export function WeatherChart({ data }: WeatherChartProps) {
             width={40}
           />
           <Tooltip
-            formatter={(value: number | undefined, name: string) => [
+            formatter={(value: number | undefined, name: string | undefined) => [
               value !== undefined ? `${value}°C` : '',
-              LEGEND_LABELS[name] ?? name,
+              name !== undefined ? (LEGEND_LABELS[name] ?? name) : '',
             ]}
             labelFormatter={(label: React.ReactNode) =>
               typeof label === 'string' ? formatDateLong(label) : String(label)
