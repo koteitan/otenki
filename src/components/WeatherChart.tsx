@@ -5,7 +5,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   Legend,
   ReferenceLine,
   ResponsiveContainer,
@@ -28,11 +27,6 @@ const PAST_YEAR_OPACITY = [0.9, 0.7, 0.5, 0.35]; // 1年前〜4年前
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   return `${d.getMonth() + 1}/${d.getDate()}`;
-}
-
-function formatDateLong(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
 // 日付を指定年数だけ加算（閏年の2/29は2/28に丸める）
@@ -146,21 +140,6 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
             width={5}
             mirror={true}
             ticks={yAxisTicks}
-          />
-          <Tooltip
-            formatter={(value: number | undefined, name: string | undefined) => [
-              value !== undefined && value !== null ? `${value}°C` : '',
-              name !== undefined ? (LEGEND_LABELS[name] ?? name) : '',
-            ]}
-            labelFormatter={(label: React.ReactNode) =>
-              typeof label === 'string' ? formatDateLong(label) : String(label)
-            }
-            contentStyle={{
-              backgroundColor: 'var(--tooltip-bg)',
-              border: '1px solid var(--tooltip-border)',
-              borderRadius: '6px',
-              color: 'var(--text-color)',
-            }}
           />
           <Legend
             formatter={(value: string) => LEGEND_LABELS[value] ?? value}
