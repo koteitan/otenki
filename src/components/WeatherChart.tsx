@@ -143,7 +143,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
           <YAxis
             unit="℃"
             tick={{ fill: 'var(--text-secondary)', fontSize: 11, textAnchor: 'start', dx: 5 }}
-            width={0}
+            width={5}
             mirror={true}
             ticks={yAxisTicks}
           />
