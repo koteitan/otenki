@@ -107,7 +107,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
   return (
     <div className="weather-chart">
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+        <LineChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
           <XAxis
             dataKey="date"
