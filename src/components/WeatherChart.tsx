@@ -117,8 +117,8 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
           />
           <YAxis
             unit="°"
-            tick={{ fill: 'var(--text-secondary)', fontSize: 12, textAnchor: 'start', dx: 0 }}
-            width={40}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+            width={20}
           />
           <Tooltip
             formatter={(value: number | undefined, name: string | undefined) => [
