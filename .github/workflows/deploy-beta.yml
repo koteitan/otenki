@@ -40,17 +40,14 @@ jobs:
       - name: Move dist to dist_beta
         run: mv dist dist_beta
 
-      - name: Checkout main
-        uses: actions/checkout@v4
+      - name: Download main dist
+        uses: dawidd6/action-download-artifact@v6
         with:
-          ref: main
-          clean: false
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build (main)
-        run: npm run build
+          workflow: deploy.yml
+          branch: main
+          name: main-dist
+          path: ./dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Copy dist_beta to dist/beta
         run: cp -r dist_beta dist/beta

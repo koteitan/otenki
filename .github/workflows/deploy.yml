@@ -41,6 +41,13 @@ jobs:
         with:
           path: './dist'
 
+      - name: Upload dist as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-dist
+          path: ./dist
+          retention-days: 7
+
   deploy:
     environment:
       name: github-pages
