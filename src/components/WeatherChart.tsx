@@ -99,6 +99,31 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
     });
   }, [data, historicalData]);
 
+  const yAxisTicks = useMemo(() => {
+    if (chartData.length === 0) return [];
+    let min = Infinity;
+    let max = -Infinity;
+    chartData.forEach((entry) => {
+      Object.keys(entry).forEach((key) => {
+        if (key.startsWith('temp')) {
+          const val = entry[key];
+          if (typeof val === 'number' && !isNaN(val)) {
+            if (val < min) min = val;
+            if (val > max) max = val;
+          }
+        }
+      });
+    });
+    if (!isFinite(min) || !isFinite(max)) return [];
+    const tickMin = Math.floor(min / 5) * 5;
+    const tickMax = Math.ceil(max / 5) * 5;
+    const ticks: number[] = [];
+    for (let t = tickMin; t <= tickMax; t += 5) {
+      ticks.push(t);
+    }
+    return ticks;
+  }, [chartData]);
+
   if (chartData.length === 0) return null;
 
   const tickInterval = Math.floor(chartData.length / 10);
@@ -107,7 +132,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
   return (
     <div className="weather-chart">
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 5 }}>
+        <LineChart data={chartData} margin={{ top: 10, right: 5, left: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
           <XAxis
             dataKey="date"
@@ -116,9 +141,11 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
           />
           <YAxis
-            unit="°"
+            unit="℃"
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-            width={20}
+            width={0}
+            mirror={true}
+            ticks={yAxisTicks}
           />
           <Tooltip
             formatter={(value: number | undefined, name: string | undefined) => [
