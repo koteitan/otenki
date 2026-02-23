@@ -148,7 +148,7 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
             x={today}
             stroke="var(--text-secondary)"
             strokeDasharray="4 4"
-            label={{ value: '今日', fill: 'var(--text-secondary)', fontSize: 11 }}
+            label={{ value: '今日', fill: 'var(--text-secondary)', fontSize: 11, position: 'insideTopLeft' }}
           />
 
           {/* 過去4年（奥に表示） */}
