@@ -162,17 +162,6 @@ function App() {
         <h1>お天気アプリ</h1>
       </header>
       <main className="app-main">
-        <div className="controls">
-          <PrefectureSelector
-            value={prefCode}
-            onChange={setPrefCode}
-            dateMode={dateMode}
-            onDateModeChange={setDateMode}
-            customDateInput={customDateInput}
-            onCustomDateInputChange={setCustomDateInput}
-            onCustomDateConfirm={confirmCustomDate}
-          />
-        </div>
         <div className="chart-container">
           {loading && (
             <div className="status-message">データを読み込み中...</div>
@@ -187,6 +176,17 @@ function App() {
               <WeatherChart data={weatherData} historicalData={historicalData} />
             </>
           )}
+        </div>
+        <div className="controls">
+          <PrefectureSelector
+            value={prefCode}
+            onChange={setPrefCode}
+            dateMode={dateMode}
+            onDateModeChange={setDateMode}
+            customDateInput={customDateInput}
+            onCustomDateInputChange={setCustomDateInput}
+            onCustomDateConfirm={confirmCustomDate}
+          />
         </div>
       </main>
     </div>

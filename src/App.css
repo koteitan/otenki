@@ -1,7 +1,7 @@
 #root {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 1px 1rem 3px;
+  padding: 1px 1px 1px 3px;
 }
 
 .app {
@@ -12,7 +12,7 @@
 
 /* Header */
 .app-header {
-  padding: 1rem 0;
+  padding: 1px 0;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 1.5rem;
 }
