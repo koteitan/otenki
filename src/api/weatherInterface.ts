@@ -1,4 +1,14 @@
 /**
+ * 降水確率データ（時刻単位）
+ */
+export interface PrecipitationPoint {
+  /** 日時 (ISO 8601形式) */
+  time: string;
+  /** 降水確率 (0-100%) */
+  value: number;
+}
+
+/**
  * 天気データインターフェース
  */
 export interface WeatherData {
@@ -55,4 +65,14 @@ export interface WeatherAPI {
     monthsBack: number,
     daysForward: number
   ): Promise<WeatherData[]>;
+
+  /**
+   * 降水確率予報データを取得（16日間・時間単位）
+   * @param lat 緯度
+   * @param lon 経度
+   */
+  getPrecipitationForecast(
+    lat: number,
+    lon: number
+  ): Promise<PrecipitationPoint[]>;
 }

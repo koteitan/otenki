@@ -1,4 +1,4 @@
-import type { WeatherAPI, WeatherData } from './weatherInterface';
+import type { WeatherAPI, WeatherData, PrecipitationPoint } from './weatherInterface';
 
 /**
  * Open-Meteo APIの実装
@@ -134,6 +134,36 @@ export class OpenMeteoAPI implements WeatherAPI {
 
       return weatherData;
     });
+  }
+
+  /**
+   * 降水確率予報データを取得（16日間・時間単位）
+   */
+  async getPrecipitationForecast(
+    lat: number,
+    lon: number
+  ): Promise<PrecipitationPoint[]> {
+    const params = new URLSearchParams({
+      latitude: lat.toString(),
+      longitude: lon.toString(),
+      hourly: 'precipitation_probability',
+      forecast_days: '16',
+      timezone: 'Asia/Tokyo',
+    });
+
+    const response = await fetch(`${this.FORECAST_URL}?${params}`);
+    if (!response.ok) {
+      throw new Error(`Precipitation forecast fetch failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const times: string[] = data.hourly.time;
+    const values: number[] = data.hourly.precipitation_probability;
+
+    return times.map((time, index) => ({
+      time,
+      value: values[index],
+    }));
   }
 
   /**

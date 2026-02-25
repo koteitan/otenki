@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { PrefectureSelector } from './components/PrefectureSelector';
 import { WeatherChart } from './components/WeatherChart';
+import { PrecipitationChart } from './components/PrecipitationChart';
 import { weatherAPI } from './api';
 import { getPrefectureByCode, getPrefectureByName } from './data/prefectures';
-import type { WeatherData } from './api/weatherInterface';
+import type { WeatherData, PrecipitationPoint } from './api/weatherInterface';
 import './App.css';
 
 const STORAGE_KEY = 'selectedPrefecture';
@@ -47,6 +48,7 @@ function App() {
   const [prefCode, setPrefCode] = useState(getInitialPrefCode);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
   const [historicalData, setHistoricalData] = useState<WeatherData[][]>([]);
+  const [precipData, setPrecipData] = useState<PrecipitationPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateMode, setDateMode] = useState<'today' | 'custom'>('today');
@@ -72,6 +74,7 @@ function App() {
     setError(null);
     setWeatherData([]);
     setHistoricalData([]);
+    setPrecipData([]);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -140,9 +143,12 @@ function App() {
       ]).then(([hist, forecast]) => [...hist, ...forecast]);
     }
 
-    Promise.all([currentDataPromise, ...historicalPromises])
-      .then(([currentData, ...histData]) => {
+    const precipPromise = weatherAPI.getPrecipitationForecast(pref.lat, pref.lon);
+
+    Promise.all([currentDataPromise, precipPromise, ...historicalPromises])
+      .then(([currentData, precip, ...histData]) => {
         setWeatherData(currentData);
+        setPrecipData(precip);
         setHistoricalData(histData);
       })
       .catch((err: unknown) => {
@@ -162,6 +168,20 @@ function App() {
         <h1>お天気アプリ</h1>
       </header>
       <main className="app-main">
+        <div className="controls">
+          <PrefectureSelector
+            value={prefCode}
+            onChange={setPrefCode}
+            dateMode={dateMode}
+            onDateModeChange={setDateMode}
+            customDateInput={customDateInput}
+            onCustomDateInputChange={setCustomDateInput}
+            onCustomDateConfirm={confirmCustomDate}
+          />
+        </div>
+        {!loading && !error && precipData.length > 0 && (
+          <PrecipitationChart data={precipData} />
+        )}
         <div className="chart-container">
           {loading && (
             <div className="status-message">データを読み込み中...</div>
@@ -176,17 +196,6 @@ function App() {
               <WeatherChart data={weatherData} historicalData={historicalData} />
             </>
           )}
-        </div>
-        <div className="controls">
-          <PrefectureSelector
-            value={prefCode}
-            onChange={setPrefCode}
-            dateMode={dateMode}
-            onDateModeChange={setDateMode}
-            customDateInput={customDateInput}
-            onCustomDateInputChange={setCustomDateInput}
-            onCustomDateConfirm={confirmCustomDate}
-          />
         </div>
       </main>
     </div>

@@ -137,6 +137,11 @@
   width: 100%;
 }
 
+/* Precipitation chart */
+.precip-chart-container {
+  margin-bottom: 1rem;
+}
+
 /* Status messages */
 .status-message {
   text-align: center;
