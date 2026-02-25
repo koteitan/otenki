@@ -27,11 +27,19 @@ function formatDate(date: Date): string {
 }
 
 export function PrecipitationChart({ data }: PrecipitationChartProps) {
-  // 0時のエントリだけをX軸ティックに使用
-  const midnightTicks = useMemo(
-    () => data.filter((p) => new Date(p.time).getHours() === 0).map((p) => p.time),
-    [data]
-  );
+  // X軸ティック: 今日-1 〜 今日+16 を日次で固定表示
+  const midnightTicks = useMemo(() => {
+    const start = new Date();
+    start.setDate(start.getDate() - 1);
+    start.setHours(0, 0, 0, 0);
+    const ticks: string[] = [];
+    for (let i = 0; i <= 17; i += 1) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      ticks.push(`${formatDate(d)}T00:00`);
+    }
+    return ticks;
+  }, []);
 
   if (data.length === 0) return null;
 
