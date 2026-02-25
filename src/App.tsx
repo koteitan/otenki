@@ -148,7 +148,11 @@ function App() {
     Promise.all([currentDataPromise, precipPromise, ...historicalPromises])
       .then(([currentData, precip, ...histData]) => {
         setWeatherData(currentData);
-        setPrecipData(precip);
+        const precipStart = new Date(today);
+        precipStart.setDate(precipStart.getDate() - 1);
+        precipStart.setHours(0, 0, 0, 0);
+        const filteredPrecip = precip.filter((p) => new Date(p.time) >= precipStart);
+        setPrecipData(filteredPrecip);
         setHistoricalData(histData);
       })
       .catch((err: unknown) => {

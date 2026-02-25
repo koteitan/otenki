@@ -51,9 +51,8 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#60A5FA"
-              strokeWidth={2}
-              dot={false}
+              stroke="none"
+              dot={{ r: 2, fill: '#60A5FA' }}
               activeDot={false}
               isAnimationActive={false}
             />
