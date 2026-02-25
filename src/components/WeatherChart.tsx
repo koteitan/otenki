@@ -18,8 +18,6 @@ interface WeatherChartProps {
 
 type ChartDataEntry = Record<string, string | number | null | undefined>;
 
-const today = new Date().toISOString().split('T')[0];
-
 const PAST_MAX_COLOR = '#991B1B'; // 暗い赤
 const PAST_MIN_COLOR = '#1e3a8a'; // 暗い青
 const PAST_YEAR_OPACITY = [0.9, 0.7, 0.5, 0.35]; // 1年前〜4年前
@@ -118,6 +116,11 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
     return ticks;
   }, [chartData]);
 
+  const currentTempDate = useMemo(() => {
+    const entry = chartData.find((e) => e.tempCurrent != null);
+    return entry?.date as string | undefined;
+  }, [chartData]);
+
   if (chartData.length === 0) return null;
 
   const tickInterval = Math.floor(chartData.length / 10);
@@ -144,12 +147,14 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
           <Legend
             formatter={(value: string) => LEGEND_LABELS[value] ?? value}
           />
-          <ReferenceLine
-            x={today}
-            stroke="var(--text-secondary)"
-            strokeDasharray="4 4"
-            label={{ value: '現在', fill: 'var(--text-secondary)', fontSize: 11, position: 'insideTopLeft' }}
-          />
+          {currentTempDate && (
+            <ReferenceLine
+              x={currentTempDate}
+              stroke="var(--text-secondary)"
+              strokeDasharray="4 4"
+              label={{ value: '現在', fill: 'var(--text-secondary)', fontSize: 11, position: 'insideTopLeft' }}
+            />
+          )}
 
           {/* 過去4年（奥に表示） */}
           {hasHistorical &&
