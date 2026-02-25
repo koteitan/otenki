@@ -151,8 +151,19 @@ function App() {
         const precipStart = new Date(today);
         precipStart.setDate(precipStart.getDate() - 1);
         precipStart.setHours(0, 0, 0, 0);
-        const filteredPrecip = precip.filter((p) => new Date(p.time) >= precipStart);
-        setPrecipData(filteredPrecip);
+        const precipEnd = new Date(today);
+        precipEnd.setDate(precipEnd.getDate() + 16);
+        precipEnd.setHours(23, 59, 59, 999);
+        const filteredPrecip = precip.filter((p) => {
+          const t = new Date(p.time);
+          return t >= precipStart && t <= precipEnd;
+        });
+        // ensure yesterday 00:00 exists to show label even if forecast starts today
+        const hasYesterday = filteredPrecip.some((p) => new Date(p.time).getTime() === precipStart.getTime());
+        const withYesterday = hasYesterday
+          ? filteredPrecip
+          : [{ time: `${formatDate(precipStart)}T00:00`, value: null }, ...filteredPrecip];
+        setPrecipData(withYesterday);
         setHistoricalData(histData);
       })
       .catch((err: unknown) => {

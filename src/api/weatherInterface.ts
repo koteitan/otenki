@@ -5,7 +5,7 @@ export interface PrecipitationPoint {
   /** 日時 (ISO 8601形式) */
   time: string;
   /** 降水確率 (0-100%) */
-  value: number;
+  value: number | null;
 }
 
 /**

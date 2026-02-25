@@ -6,6 +6,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  ReferenceLine,
 } from 'recharts';
 import type { PrecipitationPoint } from '../api/weatherInterface';
 
@@ -18,6 +19,13 @@ function formatTick(timeStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function PrecipitationChart({ data }: PrecipitationChartProps) {
   // 0時のエントリだけをX軸ティックに使用
   const midnightTicks = useMemo(
@@ -26,6 +34,8 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
   );
 
   if (data.length === 0) return null;
+
+  const today = `${formatDate(new Date())}T00:00`;
 
   return (
     <div className="chart-container precip-chart-container">
@@ -48,11 +58,18 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
               width={5}
               mirror={true}
             />
+            <ReferenceLine
+              x={today}
+              stroke="var(--text-secondary)"
+              strokeDasharray="4 4"
+              label={{ value: '今日', fill: 'var(--text-secondary)', fontSize: 11, position: 'insideTopLeft' }}
+            />
             <Line
               type="monotone"
               dataKey="value"
-              stroke="none"
-              dot={{ r: 2, fill: '#60A5FA' }}
+              stroke="#60A5FA"
+              strokeWidth={2}
+              dot={false}
               activeDot={false}
               isAnimationActive={false}
             />
