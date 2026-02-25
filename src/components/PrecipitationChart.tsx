@@ -14,17 +14,11 @@ interface PrecipitationChartProps {
   data: PrecipitationPoint[];
 }
 
-function formatTick(timeStr: string): string {
-  const d = new Date(timeStr);
+function formatTick(timeValue: number): string {
+  const d = new Date(timeValue);
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 export function PrecipitationChart({ data }: PrecipitationChartProps) {
   // X軸ティック: 今日-1 〜 今日+16 を日次で固定表示
@@ -32,28 +26,35 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
     const start = new Date();
     start.setDate(start.getDate() - 1);
     start.setHours(0, 0, 0, 0);
-    const ticks: string[] = [];
+    const ticks: number[] = [];
     for (let i = 0; i <= 17; i += 1) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      ticks.push(`${formatDate(d)}T00:00`);
+      ticks.push(d.getTime());
     }
     return ticks;
   }, []);
 
-  if (data.length === 0) return null;
+  const chartData = useMemo(() => data.map((p) => ({ ...p, timeValue: new Date(p.time).getTime() })), [data]);
 
-  const today = `${formatDate(new Date())}T00:00`;
+  if (data.length === 0) return null;
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  const today = todayDate.getTime();
+  const startDomain = midnightTicks[0];
+  const endDomain = midnightTicks[midnightTicks.length - 1] + 24 * 60 * 60 * 1000 - 1;
 
   return (
     <div className="chart-container precip-chart-container">
       <h2 className="chart-title">降水確率（16日間）</h2>
       <div className="weather-chart">
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data} margin={{ top: 10, right: 5, left: 5, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 5, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
             <XAxis
-              dataKey="time"
+              dataKey="timeValue"
+              type="number"
+              domain={[startDomain, endDomain]}
               ticks={midnightTicks}
               interval={0}
               padding={{ left: 12, right: 5 }}
