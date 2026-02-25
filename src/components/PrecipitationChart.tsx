@@ -56,6 +56,8 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
               dataKey="time"
               ticks={midnightTicks}
               interval={0}
+              padding={{ left: 12, right: 5 }}
+              tickMargin={6}
               tickFormatter={formatTick}
               tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
             />
