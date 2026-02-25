@@ -55,6 +55,7 @@ export function PrecipitationChart({ data }: PrecipitationChartProps) {
             <XAxis
               dataKey="time"
               ticks={midnightTicks}
+              interval={0}
               tickFormatter={formatTick}
               tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
             />
