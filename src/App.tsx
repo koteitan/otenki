@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PrefectureSelector } from './components/PrefectureSelector';
 import { WeatherChart } from './components/WeatherChart';
 import { PrecipitationChart } from './components/PrecipitationChart';
@@ -44,6 +44,13 @@ function parseCustomDate(value: string, year: number): Date | null {
   return d;
 }
 
+function TempDelta({ diff }: { diff: number | null }) {
+  if (diff === null) return null;
+  const sign = diff > 0 ? '+' : '';
+  const cls = diff > 0 ? 'delta-positive' : diff < 0 ? 'delta-negative' : 'delta-zero';
+  return <span className={`temp-delta ${cls}`}>({sign}{diff})</span>;
+}
+
 function App() {
   const [prefCode, setPrefCode] = useState(getInitialPrefCode);
   const [weatherData, setWeatherData] = useState<WeatherData[]>([]);
@@ -54,6 +61,7 @@ function App() {
   const [dateMode, setDateMode] = useState<'today' | 'custom'>('today');
   const [customDateInput, setCustomDateInput] = useState('1/1');
   const [customDate, setCustomDate] = useState('1/1');
+  const [showTempDiff, setShowTempDiff] = useState(true);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, prefCode);
@@ -177,6 +185,34 @@ function App() {
   const selectedPref = getPrefectureByCode(prefCode);
   const centerLabel = dateMode === 'today' ? '今日' : customDate;
 
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+  const tomorrowStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+  const yesterdayStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+
+  const weatherDataMap = useMemo(() => {
+    const map = new Map<string, WeatherData>();
+    weatherData.forEach((d) => map.set(d.date, d));
+    return map;
+  }, [weatherData]);
+
+  const todayW = weatherDataMap.get(todayStr);
+  const tomorrowW = weatherDataMap.get(tomorrowStr);
+  const yesterdayW = weatherDataMap.get(yesterdayStr);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -194,7 +230,43 @@ function App() {
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
               <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
-              <WeatherChart data={weatherData} historicalData={historicalData} />
+              {showTempDiff && (todayW || tomorrowW) && (
+                <div className="temp-diff-panel">
+                  {todayW && (
+                    <div className="temp-diff-row">
+                      <span className="temp-diff-label">今日</span>
+                      <span className="temp-diff-value">
+                        最高 {Math.round(todayW.tempMax)}℃
+                        <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMax - yesterdayW.tempMax) : null} />
+                      </span>
+                      <span className="temp-diff-sep">/</span>
+                      <span className="temp-diff-value">
+                        最低 {Math.round(todayW.tempMin)}℃
+                        <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMin - yesterdayW.tempMin) : null} />
+                      </span>
+                    </div>
+                  )}
+                  {tomorrowW && (
+                    <div className="temp-diff-row">
+                      <span className="temp-diff-label">明日</span>
+                      <span className="temp-diff-value">
+                        最高 {Math.round(tomorrowW.tempMax)}℃
+                        <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMax - todayW.tempMax) : null} />
+                      </span>
+                      <span className="temp-diff-sep">/</span>
+                      <span className="temp-diff-value">
+                        最低 {Math.round(tomorrowW.tempMin)}℃
+                        <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMin - todayW.tempMin) : null} />
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <WeatherChart
+                data={weatherData}
+                historicalData={historicalData}
+                onChartClick={() => setShowTempDiff((v) => !v)}
+              />
             </>
           )}
         </div>

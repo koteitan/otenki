@@ -142,6 +142,55 @@
   margin-bottom: 1rem;
 }
 
+/* Temp diff panel */
+.temp-diff-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 0.75rem 8px;
+}
+
+.temp-diff-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.temp-diff-label {
+  font-weight: 600;
+  min-width: 2em;
+  color: var(--text-color);
+}
+
+.temp-diff-sep {
+  color: var(--text-secondary);
+}
+
+.temp-diff-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2em;
+}
+
+.temp-delta {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.delta-positive {
+  color: #EF4444;
+}
+
+.delta-negative {
+  color: #3B82F6;
+}
+
+.delta-zero {
+  color: var(--text-secondary);
+}
+
 /* Status messages */
 .status-message {
   text-align: center;
