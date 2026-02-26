@@ -230,38 +230,6 @@ function App() {
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
               <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
-              {showTempDiff && (todayW || tomorrowW) && (
-                <div className="temp-diff-panel">
-                  {todayW && (
-                    <div className="temp-diff-row">
-                      <span className="temp-diff-label">今日</span>
-                      <span className="temp-diff-value">
-                        最高 {Math.round(todayW.tempMax)}℃
-                        <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMax - yesterdayW.tempMax) : null} />
-                      </span>
-                      <span className="temp-diff-sep">/</span>
-                      <span className="temp-diff-value">
-                        最低 {Math.round(todayW.tempMin)}℃
-                        <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMin - yesterdayW.tempMin) : null} />
-                      </span>
-                    </div>
-                  )}
-                  {tomorrowW && (
-                    <div className="temp-diff-row">
-                      <span className="temp-diff-label">明日</span>
-                      <span className="temp-diff-value">
-                        最高 {Math.round(tomorrowW.tempMax)}℃
-                        <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMax - todayW.tempMax) : null} />
-                      </span>
-                      <span className="temp-diff-sep">/</span>
-                      <span className="temp-diff-value">
-                        最低 {Math.round(tomorrowW.tempMin)}℃
-                        <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMin - todayW.tempMin) : null} />
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
               <WeatherChart
                 data={weatherData}
                 historicalData={historicalData}
@@ -270,6 +238,38 @@ function App() {
             </>
           )}
         </div>
+        {!loading && !error && showTempDiff && (todayW || tomorrowW) && (
+          <div className="temp-diff-panel">
+            {todayW && (
+              <div className="temp-diff-row">
+                <span className="temp-diff-label">今日</span>
+                <span className="temp-diff-value">
+                  最高 {Math.round(todayW.tempMax)}℃
+                  <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMax - yesterdayW.tempMax) : null} />
+                </span>
+                <span className="temp-diff-sep">/</span>
+                <span className="temp-diff-value">
+                  最低 {Math.round(todayW.tempMin)}℃
+                  <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMin - yesterdayW.tempMin) : null} />
+                </span>
+              </div>
+            )}
+            {tomorrowW && (
+              <div className="temp-diff-row">
+                <span className="temp-diff-label">明日</span>
+                <span className="temp-diff-value">
+                  最高 {Math.round(tomorrowW.tempMax)}℃
+                  <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMax - todayW.tempMax) : null} />
+                </span>
+                <span className="temp-diff-sep">/</span>
+                <span className="temp-diff-value">
+                  最低 {Math.round(tomorrowW.tempMin)}℃
+                  <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMin - todayW.tempMin) : null} />
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         {!loading && !error && precipData.length > 0 && (
           <PrecipitationChart data={precipData} />
         )}
