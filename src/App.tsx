@@ -61,7 +61,7 @@ function App() {
   const [dateMode, setDateMode] = useState<'today' | 'custom'>('today');
   const [customDateInput, setCustomDateInput] = useState('1/1');
   const [customDate, setCustomDate] = useState('1/1');
-  const [showTempDiff, setShowTempDiff] = useState(true);
+  const [compareMode, setCompareMode] = useState<'today' | 'tomorrow'>('today');
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, prefCode);
@@ -233,41 +233,40 @@ function App() {
               <WeatherChart
                 data={weatherData}
                 historicalData={historicalData}
-                onChartClick={() => setShowTempDiff((v) => !v)}
               />
             </>
           )}
         </div>
-        {!loading && !error && showTempDiff && (todayW || tomorrowW) && (
-          <div className="temp-diff-panel">
-            {todayW && (
-              <div className="temp-diff-row">
-                <span className="temp-diff-label">今日</span>
-                <span className="temp-diff-value">
-                  最高 {Math.round(todayW.tempMax)}℃
-                  <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMax - yesterdayW.tempMax) : null} />
-                </span>
-                <span className="temp-diff-sep">/</span>
-                <span className="temp-diff-value">
-                  最低 {Math.round(todayW.tempMin)}℃
-                  <TempDelta diff={yesterdayW != null ? Math.round(todayW.tempMin - yesterdayW.tempMin) : null} />
-                </span>
-              </div>
-            )}
-            {tomorrowW && (
-              <div className="temp-diff-row">
-                <span className="temp-diff-label">明日</span>
-                <span className="temp-diff-value">
-                  最高 {Math.round(tomorrowW.tempMax)}℃
-                  <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMax - todayW.tempMax) : null} />
-                </span>
-                <span className="temp-diff-sep">/</span>
-                <span className="temp-diff-value">
-                  最低 {Math.round(tomorrowW.tempMin)}℃
-                  <TempDelta diff={todayW != null ? Math.round(tomorrowW.tempMin - todayW.tempMin) : null} />
-                </span>
-              </div>
-            )}
+        {!loading && !error && (compareMode === 'today' ? todayW : tomorrowW) && (
+          <div
+            className="temp-diff-panel"
+            onClick={() => setCompareMode((m) => (m === 'today' ? 'tomorrow' : 'today'))}
+            style={{ cursor: 'pointer' }}
+          >
+            {(() => {
+              const targetW = compareMode === 'today' ? todayW : tomorrowW;
+              const baseW = compareMode === 'today' ? yesterdayW : todayW;
+              const targetLabel = compareMode === 'today' ? '今日' : '明日';
+              const modeLabel = compareMode === 'today' ? '今日↔昨日' : '明日↔今日';
+              if (!targetW) return null;
+              return (
+                <>
+                  <div className="temp-diff-mode-label">{modeLabel}</div>
+                  <div className="temp-diff-row">
+                    <span className="temp-diff-label">{targetLabel}</span>
+                    <span className="temp-diff-value">
+                      最高 {Math.round(targetW.tempMax)}℃
+                      <TempDelta diff={baseW != null ? Math.round(targetW.tempMax - baseW.tempMax) : null} />
+                    </span>
+                    <span className="temp-diff-sep">/</span>
+                    <span className="temp-diff-value">
+                      最低 {Math.round(targetW.tempMin)}℃
+                      <TempDelta diff={baseW != null ? Math.round(targetW.tempMin - baseW.tempMin) : null} />
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
         {!loading && !error && precipData.length > 0 && (
