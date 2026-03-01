@@ -53,7 +53,7 @@ function diffText(d: number | null, side: 'left' | 'right'): string {
   const sign = d > 0 ? '+' : '';
   const arrow = diffArrow(d);
   const val = `${sign}${d}`;
-  return side === 'left' ? `${val}${arrow}` : `${arrow}${val}`;
+  return side === 'left' ? `${val} ${arrow}` : `${arrow} ${val}`;
 }
 
 function App() {
