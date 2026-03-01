@@ -193,6 +193,15 @@
   color: #3B82F6;
 }
 
+@media (min-width: 768px) {
+  .temp-diff-left {
+    padding-right: 1.2rem;
+  }
+  .temp-diff-center {
+    width: 0.2rem;
+  }
+}
+
 /* Status messages */
 .status-message {
   text-align: center;
