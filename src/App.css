@@ -142,11 +142,21 @@
   margin-bottom: 1rem;
 }
 
+/* Chart graph wrapper for overlay */
+.chart-graph-wrapper {
+  position: relative;
+}
+
 /* Temp diff panel */
 .temp-diff-panel {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
   display: flex;
-  align-items: stretch;
-  margin: 0.25rem 0 0.5rem 8px;
+  align-items: center;
   font-size: 0.82rem;
   font-weight: 600;
   font-family: monospace;
@@ -163,19 +173,7 @@
 }
 
 .temp-diff-center {
-  border-left: 2px solid var(--text-color);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-height: 2.5rem;
-}
-
-.temp-diff-center-label {
-  font-size: 0.7rem;
-  font-family: sans-serif;
-  color: var(--text-color);
-  font-weight: 700;
-  padding: 0 0.25rem;
+  width: 1.5rem;
 }
 
 .temp-diff-right {

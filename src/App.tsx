@@ -239,25 +239,25 @@ function App() {
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
               <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
-              {todayW && (
-                <div className="temp-diff-panel">
-                  <div className="temp-diff-left">
-                    <div className="temp-max">{diffText(ytdMaxDiff, 'left')}</div>
-                    <div className="temp-min">{diffText(ytdMinDiff, 'left')}</div>
+              <div className="chart-graph-wrapper">
+                {todayW && (
+                  <div className="temp-diff-panel">
+                    <div className="temp-diff-left">
+                      <div className="temp-max">{diffText(ytdMaxDiff, 'left')}</div>
+                      <div className="temp-min">{diffText(ytdMinDiff, 'left')}</div>
+                    </div>
+                    <div className="temp-diff-center" />
+                    <div className="temp-diff-right">
+                      <div className="temp-max">{diffText(ttmMaxDiff, 'right')}</div>
+                      <div className="temp-min">{diffText(ttmMinDiff, 'right')}</div>
+                    </div>
                   </div>
-                  <div className="temp-diff-center">
-                    <span className="temp-diff-center-label">今日</span>
-                  </div>
-                  <div className="temp-diff-right">
-                    <div className="temp-max">{diffText(ttmMaxDiff, 'right')}</div>
-                    <div className="temp-min">{diffText(ttmMinDiff, 'right')}</div>
-                  </div>
-                </div>
-              )}
-              <WeatherChart
-                data={weatherData}
-                historicalData={historicalData}
-              />
+                )}
+                <WeatherChart
+                  data={weatherData}
+                  historicalData={historicalData}
+                />
+              </div>
             </>
           )}
         </div>
