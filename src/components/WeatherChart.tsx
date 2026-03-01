@@ -14,6 +14,7 @@ import type { WeatherData } from '../api/weatherInterface';
 interface WeatherChartProps {
   data: WeatherData[];
   historicalData?: WeatherData[][];
+  onChartClick?: () => void;
 }
 
 type ChartDataEntry = Record<string, string | number | null | undefined>;
@@ -48,7 +49,7 @@ const LEGEND_LABELS: Record<string, string> = {
   tempMin_1y: '過去4年 最低',
 };
 
-export function WeatherChart({ data, historicalData }: WeatherChartProps) {
+export function WeatherChart({ data, historicalData, onChartClick }: WeatherChartProps) {
   const chartData = useMemo<ChartDataEntry[]>(() => {
     // 各過去年のデータを「今年の日付」にシフトしたMapを構築
     const histMaps = (historicalData ?? []).map((yearData, idx) => {
@@ -127,7 +128,11 @@ export function WeatherChart({ data, historicalData }: WeatherChartProps) {
   const hasHistorical = historicalData && historicalData.length > 0;
 
   return (
-    <div className="weather-chart">
+    <div
+      className="weather-chart"
+      onClick={onChartClick}
+      style={onChartClick ? { cursor: 'pointer' } : undefined}
+    >
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData} margin={{ top: 10, right: 5, left: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PrefectureSelector } from './components/PrefectureSelector';
 import { WeatherChart } from './components/WeatherChart';
 import { PrecipitationChart } from './components/PrecipitationChart';
@@ -42,6 +42,18 @@ function parseCustomDate(value: string, year: number): Date | null {
   const d = new Date(year, month - 1, day);
   if (d.getMonth() !== month - 1) return null; // 2/30 などの無効な日付を除外
   return d;
+}
+
+function diffArrow(d: number): string {
+  return d > 0 ? '↗' : d < 0 ? '↘' : '→';
+}
+
+function diffText(d: number | null, side: 'left' | 'right'): string {
+  if (d === null) return '';
+  const sign = d > 0 ? '+' : '';
+  const arrow = diffArrow(d);
+  const val = `${sign}${d}`;
+  return side === 'left' ? `${val} ${arrow}` : `${arrow} ${val}`;
 }
 
 function App() {
@@ -177,6 +189,39 @@ function App() {
   const selectedPref = getPrefectureByCode(prefCode);
   const centerLabel = dateMode === 'today' ? '今日' : customDate;
 
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+  const tomorrowStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+  const yesterdayStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(0, 0, 0, 0);
+    return formatDate(d);
+  }, []);
+
+  const weatherDataMap = useMemo(() => {
+    const map = new Map<string, WeatherData>();
+    weatherData.forEach((d) => map.set(d.date, d));
+    return map;
+  }, [weatherData]);
+
+  const todayW = weatherDataMap.get(todayStr);
+  const tomorrowW = weatherDataMap.get(tomorrowStr);
+  const yesterdayW = weatherDataMap.get(yesterdayStr);
+
+  const ytdMaxDiff = yesterdayW != null && todayW != null ? Math.round(todayW.tempMax - yesterdayW.tempMax) : null;
+  const ytdMinDiff = yesterdayW != null && todayW != null ? Math.round(todayW.tempMin - yesterdayW.tempMin) : null;
+  const ttmMaxDiff = todayW != null && tomorrowW != null ? Math.round(tomorrowW.tempMax - todayW.tempMax) : null;
+  const ttmMinDiff = todayW != null && tomorrowW != null ? Math.round(tomorrowW.tempMin - todayW.tempMin) : null;
+
   return (
     <div className="app">
       <header className="app-header">
@@ -194,7 +239,25 @@ function App() {
             <>
               <h2 className="chart-title">{selectedPref?.name} の気温推移</h2>
               <p className="chart-subtitle">{centerLabel} の前後2ヶ月（過去4年比較）</p>
-              <WeatherChart data={weatherData} historicalData={historicalData} />
+              <div className="chart-graph-wrapper">
+                {todayW && (
+                  <div className="temp-diff-panel">
+                    <div className="temp-diff-left">
+                      <div className="temp-max">{diffText(ytdMaxDiff, 'left')}</div>
+                      <div className="temp-min">{diffText(ytdMinDiff, 'left')}</div>
+                    </div>
+                    <div className="temp-diff-center" />
+                    <div className="temp-diff-right">
+                      <div className="temp-max">{diffText(ttmMaxDiff, 'right')}</div>
+                      <div className="temp-min">{diffText(ttmMinDiff, 'right')}</div>
+                    </div>
+                  </div>
+                )}
+                <WeatherChart
+                  data={weatherData}
+                  historicalData={historicalData}
+                />
+              </div>
             </>
           )}
         </div>

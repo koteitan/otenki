@@ -142,6 +142,66 @@
   margin-bottom: 1rem;
 }
 
+/* Chart graph wrapper for overlay */
+.chart-graph-wrapper {
+  position: relative;
+}
+
+/* Temp diff panel */
+.temp-diff-panel {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: normal;
+  font-family: monospace;
+  background: transparent;
+}
+
+.temp-diff-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.15rem;
+  padding-right: 0.8rem;
+}
+
+.temp-diff-center {
+  width: 0.1rem;
+}
+
+.temp-diff-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding-left: 0;
+}
+
+.temp-max {
+  color: #EF4444;
+}
+
+.temp-min {
+  color: #3B82F6;
+}
+
+@media (min-width: 768px) {
+  .temp-diff-left {
+    padding-right: 1.6rem;
+  }
+  .temp-diff-center {
+    width: 0.2rem;
+  }
+}
+
 /* Status messages */
 .status-message {
   text-align: center;
